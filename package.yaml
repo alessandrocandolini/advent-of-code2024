@@ -1,0 +1,61 @@
+name:                advent-of-code2024
+version:             0.1.0.0
+
+dependencies:
+- base >= 4.7 && < 5
+- text
+- containers
+- vector
+- split
+- safe
+- either
+- megaparsec
+- optparse-applicative
+- witherable
+- neat-interpolation
+- recursion-schemes
+- data-fix
+- pretty
+- comonad
+- adjunctions
+
+default-extensions:
+- OverloadedStrings
+
+ghc-options:
+  - -Wall
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+  - -Wunused-packages
+
+library:
+  source-dirs: src
+
+executables:
+  advent-of-code2024-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - advent-of-code2024
+
+tests:
+  advent-of-code2024-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - advent-of-code2024
+    - hspec
+    - hspec-discover
+    - QuickCheck
+
+verbatim:
+  cabal-version: 3.0

@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # enable manual execution
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stack:
+
+    name: ${{ matrix.os }} / ghc ${{ matrix.ghc }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        stack: ["3.1.1"]
+        ghc: ["9.6.6"]
+
+    steps:
+
+    - name: Checkout repo 
+      uses: actions/checkout@v4
+
+    - name: Restore from cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.stack
+          ~/.ghcup
+        key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-stack-${{ matrix.stack }}-${{ hashFiles('stack.yaml') }}
+
+    - name: Setup Haskell Stack
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: ${{ matrix.ghc }}
+        stack-version: ${{ matrix.stack }}
+        enable-stack: true
+
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true' && success()
+      timeout-minutes: 15
+      run: |
+        stack build --system-ghc --test --no-run-tests --only-dependencies
+
+    - name: Run tests with coverage
+      timeout-minutes: 15
+      run: |
+        stack test --system-ghc --test --coverage --fast
+
+    - name: Build
+      timeout-minutes: 15
+      run: |
+        stack build --system-ghc --test --no-run-tests
+
+    - name: Generate coverage report
+      uses: 8c6794b6/hpc-codecov-action@v3
+      with:
+        target: stack:advent-of-code2024-test
+        out: ./codecov.json
+        verbose: true
+
+    - name: Send coverage report
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./codecov.json
+        fail_ci_if_error: false # optional (default = false)
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
