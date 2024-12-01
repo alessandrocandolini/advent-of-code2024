@@ -1,8 +1,9 @@
-module Day1 (logic, part1, part2, parse, program, Answer(..)) where
+module Day1 (logic, part1, part2, parse, program, Answer (..)) where
 
 import Data.Bifunctor (Bifunctor (second), bimap)
-import Data.List (sort)
-import qualified Data.Map as M
+import qualified Data.HashMap.Strict as HashMap
+import Data.Hashable (Hashable)
+import Data.List (foldl', sort)
 import Data.Semigroup (Sum (..))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -12,7 +13,6 @@ import Text.Megaparsec (Parsec, optional, runParser)
 import Text.Megaparsec.Char (eol, space)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
-import Utils (groupBy)
 
 program :: FilePath -> IO ()
 program = (=<<) print . fmap logic . T.readFile
@@ -35,7 +35,7 @@ part1 =
  where
   distance = (abs .) . (-)
 
-part2 :: (Integral a) => [(a, a)] -> Int
+part2 :: (Integral a, Hashable a) => [(a, a)] -> Int
 part2 =
   getSum
     . uncurry similarities
@@ -43,10 +43,10 @@ part2 =
     . second occurrences
     . unzip
  where
-  similarities m = foldMap (\b -> Sum (fromIntegral b * M.findWithDefault 0 b m))
+  similarities m = foldMap (\b -> Sum (fromIntegral b * HashMap.findWithDefault 0 b m))
 
-occurrences :: (Ord a) => [a] -> M.Map a Int
-occurrences = fmap length . groupBy id
+occurrences :: (Hashable a) => [a] -> HashMap.HashMap a Int
+occurrences = foldl' (\acc x -> HashMap.insertWith (+) x 1 acc) HashMap.empty
 
 type Parser = Parsec Void T.Text
 type ParsingError = ParseErrorBundle T.Text Void
