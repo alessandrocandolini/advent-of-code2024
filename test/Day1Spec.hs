@@ -4,7 +4,7 @@ module Day1Spec where
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import Day1 (parse, part1, part2)
+import Day1 (Answer, Answer(..), logic, parse, part1, part2)
 import NeatInterpolation (trimming)
 import SpecUtils (shouldBePretty)
 import Test.Hspec (Expectation, Spec, describe, expectationFailure, it, shouldBe)
@@ -32,3 +32,6 @@ spec = describe "Day 1" $ do
 
   it "part 2" $
     (fmap part2 . traverse parse . T.lines) example `shouldBePretty` Right 31
+
+  it "both" $
+    logic example `shouldBePretty` Right (Answer 11 31)

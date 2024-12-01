@@ -1,4 +1,4 @@
-module Day1 (part1, part2, parse, program) where
+module Day1 (logic, part1, part2, parse, program, Answer(..)) where
 
 import Data.Bifunctor (Bifunctor (second), bimap)
 import Data.List (sort)
