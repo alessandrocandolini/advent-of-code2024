@@ -3,6 +3,7 @@ module Day1 (part1, part2, parse, program) where
 import Data.Bifunctor (Bifunctor (second), bimap)
 import Data.List (sort)
 import qualified Data.Map as M
+import Data.Semigroup (Sum (..))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Tuple (swap)
@@ -11,7 +12,7 @@ import Text.Megaparsec (Parsec, optional, runParser)
 import Text.Megaparsec.Char (eol, space)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
-import Utils (groupMap)
+import Utils (groupBy)
 
 program :: FilePath -> IO ()
 program = (=<<) print . fmap logic . T.readFile
@@ -26,8 +27,9 @@ logic = fmap answer . parseAll
 
 part1 :: (Ord a, Num a) => [(a, a)] -> a
 part1 =
-  sum
-    . (zipWith distance <$> fst <*> snd)
+  getSum
+    . foldMap (Sum . uncurry distance)
+    . uncurry zip
     . bimap sort sort
     . unzip
  where
@@ -35,16 +37,16 @@ part1 =
 
 part2 :: (Integral a) => [(a, a)] -> Int
 part2 =
-  sum
+  getSum
     . uncurry similarities
     . swap
     . second occurrences
     . unzip
  where
-  similarities m = fmap (\b -> fromIntegral b * M.findWithDefault 0 b m)
+  similarities m = foldMap (\b -> Sum (fromIntegral b * M.findWithDefault 0 b m))
 
 occurrences :: (Ord a) => [a] -> M.Map a Int
-occurrences = fmap length . groupMap id id
+occurrences = fmap length . groupBy id
 
 type Parser = Parsec Void T.Text
 type ParsingError = ParseErrorBundle T.Text Void
