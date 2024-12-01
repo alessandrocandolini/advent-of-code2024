@@ -24,7 +24,7 @@ jobs:
 
     steps:
 
-    - name: Checkout repo 
+    - name: Checkout repo
       uses: actions/checkout@v4
 
     - name: Restore from cache
@@ -61,7 +61,7 @@ jobs:
     - name: Generate coverage report
       uses: 8c6794b6/hpc-codecov-action@v3
       with:
-        target: stack:advent-of-code2024-test
+        target: stack:aoc2024-test
         out: ./codecov.json
         verbose: true
 
@@ -73,3 +73,13 @@ jobs:
         verbose: true
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+
+    - name: Run benchmarks
+      run: stack bench --system-ghc --benchmark-arguments="--output benchmark-report.html"
+
+    - name: Upload Benchmark Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-report
+        path: benchmark-report.html
