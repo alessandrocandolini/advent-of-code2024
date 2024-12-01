@@ -79,7 +79,7 @@ jobs:
       run: stack bench --system-ghc --benchmark-arguments="--output benchmark-report.html"
 
     - name: Upload Benchmark Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: benchmark-report
         path: benchmark-report.html
