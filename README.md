@@ -40,7 +40,7 @@ stack test --fast --file-watch
 
 To run **benchmarks**
 ```
- stack bench --benchmark-arguments="--output report.html"
+stack bench --benchmark-arguments="--output report.html"
 ```
 Benchmarks are run by the CI, and reports are only uploaded as part of the CI artifacts, ie, there is no way to track performance evolution. 
 
