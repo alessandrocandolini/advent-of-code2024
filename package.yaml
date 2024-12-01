@@ -33,18 +33,19 @@ library:
   source-dirs: src
 
 executables:
-  advent-of-code2024-exe:
+  aoc2024:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -O2
     dependencies:
     - advent-of-code2024
 
 tests:
-  advent-of-code2024-test:
+  aoc2024-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -56,6 +57,20 @@ tests:
     - hspec
     - hspec-discover
     - QuickCheck
+
+benchmarks:
+  aoc2024-benchmarks:
+    main: Main.hs
+    source-dirs: benchmarks
+    ghc-options:
+      - -O2
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-s
+    dependencies:
+      - advent-of-code2024
+      - base
+      - criterion
 
 verbatim:
   cabal-version: 3.0

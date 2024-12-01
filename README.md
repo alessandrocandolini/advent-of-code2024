@@ -37,6 +37,12 @@ For faster feedback loop,
 ```
 stack test --fast --file-watch
 ```
+
+To run benchmarks 
+```
+ stack bench --benchmark-arguments="--output report.html"
+```
+
 To run `ghci` (with a version compatible with the resolver) run
 ```
 stack ghci

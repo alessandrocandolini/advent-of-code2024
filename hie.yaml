@@ -4,11 +4,13 @@ cradle:
       component: "advent-of-code2024:lib"
 
     - path: "./app/Main.hs"
-      component: "advent-of-code2024:exe:advent-of-code2024-exe"
-
-    - path: "./app/Paths_advent-of-code2024.hs"
-      component: "advent-of-code2024:exe:advent-of-code2024-exe"
+      component: "advent-of-code2024:exe:aoc2024"
 
     - path: "./test"
-      component: "advent-of-code2024:test:advent-of-code2024-test"
+      component: "advent-of-code2024:test:aoc2024-test"
 
+    - path: "./benchmarks/Main.hs"
+      component: "advent-of-code2024:bench:aoc2024-benchmarks"
+
+    - path: "./benchmarks"
+      component: "advent-of-code2024:bench:aoc2024-benchmarks"
