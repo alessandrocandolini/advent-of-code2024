@@ -14,9 +14,9 @@ values = [1000, 10_000, 100_000]
 benchmarks :: [Benchmark]
 benchmarks =
   [ bgroup
-      "part1"
+      "Day 1 part 1"
       (fmap (\n -> bench (show n) $ whnf part1 (generateInput n)) values)
   , bgroup
-      "part2"
+      "Day 1 part 2"
       (fmap (\n -> bench (show n) $ whnf part2 (generateInput n)) values)
   ]
