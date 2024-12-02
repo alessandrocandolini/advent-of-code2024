@@ -4,7 +4,7 @@ module Day2Spec where
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import Day2 (Answer (..), Level (..), Report (..), allButOne, boundPairwiseDistance, isReportSafe1, isReportSafe2, logic, monotonic, parse, parseAll, part1, part2)
+import Day2 (Answer (..), Level (..), Report (..), allButOne, boundPairwiseDistance, isReportSafe1, isReportSafe2, logic, monotonic, parseLine, parseLines, part1, part2)
 import NeatInterpolation (trimming)
 import SpecUtils (shouldBePretty)
 import Test.Hspec (Spec, describe, it, shouldBe, xit)
@@ -58,22 +58,22 @@ spec = describe "Day 2" $ do
     boundPairwiseDistance [9, 7, 6, 2, 1] `shouldBe` False
 
   it "parse line" $
-    parse "7 6 4 2 1" `shouldBePretty` Right (Report [7, 6, 4, 2, 1])
+    parseLine "7 6 4 2 1" `shouldBePretty` Right (Report [7, 6, 4, 2, 1])
 
   it "part 1 troubleshooting" $
-    fmap (fmap isReportSafe1) (parseAll example) `shouldBePretty` Right [True, False, False, False, False, True]
+    fmap (fmap isReportSafe1) (parseLines example) `shouldBePretty` Right [True, False, False, False, False, True]
 
   it "part 1" $
-    fmap part1 (parseAll example) `shouldBePretty` Right 2
+    fmap part1 (parseLines example) `shouldBePretty` Right 2
 
   it "allButOne" $
-    allButOne [1, 3, 2, 4, 5] `shouldBe` [[3, 2, 4, 5], [1, 2, 4, 5], [1, 3, 4, 5], [1, 3, 2, 5], [1,3,2,4]]
+    allButOne [1, 3, 2, 4, 5] `shouldBe` [[3, 2, 4, 5], [1, 2, 4, 5], [1, 3, 4, 5], [1, 3, 2, 5], [1, 3, 2, 4]]
 
   it "part 2 troubleshooting" $
-    fmap (fmap isReportSafe2) (parseAll example) `shouldBePretty` Right [True, False, False, True, True, True]
+    fmap (fmap isReportSafe2) (parseLines example) `shouldBePretty` Right [True, False, False, True, True, True]
 
   it "part 2" $
-    fmap part2 (parseAll example) `shouldBePretty` Right 4
+    fmap part2 (parseLines example) `shouldBePretty` Right 4
 
   it "logic" $
     logic example `shouldBePretty` Right (Answer 2 4)
