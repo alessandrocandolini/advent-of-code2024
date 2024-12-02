@@ -30,7 +30,7 @@ stack exec aoc2024
 ```
 or passing arguments
 ```
-stack exec aoc2024 -- -d <day> -f <filename> 
+stack exec aoc2024 -- run -d <day> -f <filename> 
 ```
 
 For **faster feedback loop**,
@@ -48,7 +48,11 @@ To install the executable under `~/.local/bin`,
 ```
  stack install
 ```
-and the executable can be run with `aoc2024` or passing arguments like `aoc2024 -d 1 -f inputs/day1`, assuming `~/.local/bin` is in the `$PATH` variable. 
+and the executable can be run with `aoc2024` or passing arguments like 
+```
+aoc2024 run -d 1 -f inputs/day1
+```
+assuming `~/.local/bin` is in the `$PATH` variable. 
 
 To run **ghci** (with a version compatible with the resolver) run
 ```
