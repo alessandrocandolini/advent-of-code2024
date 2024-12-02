@@ -3,11 +3,10 @@
 module Day1Spec where
 
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import Day1 (Answer, Answer(..), logic, parse, part1, part2)
+import Day1 (logic, parse, part1, part2, Answer(..))
 import NeatInterpolation (trimming)
 import SpecUtils (shouldBePretty)
-import Test.Hspec (Expectation, Spec, describe, expectationFailure, it, shouldBe)
+import Test.Hspec (Spec, describe, it)
 import Test.Hspec.QuickCheck ()
 import Test.QuickCheck ()
 
