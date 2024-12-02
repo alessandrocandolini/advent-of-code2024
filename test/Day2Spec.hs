@@ -74,3 +74,6 @@ spec = describe "Day 2" $ do
 
   it "part 2" $
     fmap part2 (parseAll example) `shouldBePretty` Right 4
+
+  it "logic" $
+    logic example `shouldBePretty` Right (Answer 2 4)
