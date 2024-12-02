@@ -27,3 +27,4 @@ cabal.project.local
 cabal.project.local~
 .ghc.environment.*
 inputs
+report.html
