@@ -14,9 +14,7 @@ import NeatInterpolation (trimming)
 import SpecUtils (shouldBePretty)
 import Test.Hspec (Spec, describe, it, shouldBe, xit)
 import Test.Hspec.QuickCheck
-import Test.Hspec.QuickCheck ()
 import Test.QuickCheck
-import Test.QuickCheck ()
 
 instance IsList (Grid a) where
   type Item (Grid a) = [a]
@@ -62,7 +60,7 @@ spec = describe "Day 4" $ do
     parse "XMASM" `shouldBe` Just Xmas
 
   it "findOccurrences in one line" $
-    findXmasOccurrences ["MMMSXXMASM"] `shouldBe` (Occurrences [Xmas] [] [] [])
+    findXmasOccurrences ["MMMSXXMASM"] `shouldBe` Occurrences [Xmas] [] [] []
 
   it "rows (numeric example)" $
     rows matrix
@@ -138,10 +136,10 @@ spec = describe "Day 4" $ do
                  , "A"
                  ]
 
-  --it "failing test for troubleshooting" $
-    --diagonals ((Grid . fmap T.unpack . T.lines) example) `shouldBe` []
-  --it "failing test for troubleshooting 2" $
-    --fmap (\p -> (p, parse p)) (diagonals ((Grid . fmap T.unpack . T.lines) example)) `shouldBe` []
+  -- it "failing test for troubleshooting" $
+  -- diagonals ((Grid . fmap T.unpack . T.lines) example) `shouldBe` []
+  -- it "failing test for troubleshooting 2" $
+  -- fmap (\p -> (p, parse p)) (diagonals ((Grid . fmap T.unpack . T.lines) example)) `shouldBe` []
 
   it "findOccurrences in puzzle example" $
     findXmasOccurrences (parseGrid example)
@@ -154,3 +152,6 @@ spec = describe "Day 4" $ do
 
   it "part1" $
     (part1 . parseGrid) example `shouldBe` 18
+
+  it "logic" $
+    logic example `shouldBe` Answer 18

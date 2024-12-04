@@ -1,6 +1,6 @@
 module Day4 where
 
-import Data.List (inits, tails, transpose)
+import Data.List (tails, transpose)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Witherable (mapMaybe)
