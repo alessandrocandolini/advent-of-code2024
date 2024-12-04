@@ -1,6 +1,6 @@
 module Day4 where
 
-import Data.List (tails, transpose, inits)
+import Data.List (inits, tails, transpose)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Witherable (mapMaybe)
@@ -30,28 +30,49 @@ data Occurrences a = Occurrences
   { horizontal :: [a]
   , vertical :: [a]
   , diagonal :: [a]
+  , backwardDiagonal :: [a]
   }
   deriving (Eq, Show)
 
 countAll :: Occurrences a -> Int
-countAll o = length (horizontal o) + length (vertical o) + length (diagonal o)
+countAll o =
+  length (horizontal o)
+    + length (vertical o)
+    + length (diagonal o)
+    + length (backwardDiagonal o)
 
-horizontalSlices :: Grid a -> [[a]]
-horizontalSlices = concatMap tails . grid
+horizontalTails :: [[a]] -> [[a]]
+horizontalTails = concatMap tails
 
-verticalSlices :: Grid a -> [[a]]
-verticalSlices = horizontalSlices . Grid . transpose . grid
+verticalTails :: [[a]] -> [[a]]
+verticalTails = horizontalTails . transpose
 
-diagonalSlices :: Grid a -> [[a]]
-diagonalSlices (Grid g) = [[]]
+rotateDiagonals :: [[a]] -> [[[a]]]
+rotateDiagonals =
+  filter (not . null)
+    . fmap
+      ( filter (not . null)
+          . fmap (uncurry drop)
+          . zip [0 ..]
+      )
+    . tails
 
+diagonalTails :: [[a]] -> [[a]]
+diagonalTails = concatMap (filter (not . null) . verticalTails) . rotateDiagonals
+
+rotateBackwardDiagonals :: [[a]] -> [[[a]]]
+rotateBackwardDiagonals = rotateDiagonals . fmap reverse
+
+backwardDiagonalTails :: [[a]] -> [[a]]
+backwardDiagonalTails = concatMap verticalTails . rotateBackwardDiagonals
 
 findOccurrences :: ([a] -> Maybe b) -> Grid a -> Occurrences b
 findOccurrences p =
   Occurrences
-    <$> (mapMaybe p . horizontalSlices)
-    <*> (mapMaybe p . verticalSlices)
-    <*> (mapMaybe p . diagonalSlices)
+    <$> mapMaybe p . horizontalTails . grid
+    <*> mapMaybe p . verticalTails . grid
+    <*> mapMaybe p . diagonalTails . grid
+    <*> mapMaybe p . backwardDiagonalTails . grid
 
 parse :: String -> Maybe Xmas
 parse ('X' : 'M' : 'A' : 'S' : _) = Just Xmas

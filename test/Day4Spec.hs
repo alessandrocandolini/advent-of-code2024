@@ -29,21 +29,14 @@ example =
       MXMXAXMASX
  |]
 
-slices :: Grid a -> [[a]]
-slices g = horizontalSlices g ++ verticalSlices g ++ diagonalSlices g
+slices :: [[a]] -> [[a]]
+slices g = horizontalTails g ++ verticalTails g ++ diagonalTails g
 
 findXmasOccurrences :: Grid Char -> Occurrences Xmas
 findXmasOccurrences = findOccurrences parse
 
 spec :: Spec
 spec = describe "Day 4" $ do
-  it "slices on a single row" $
-    let
-      input :: String
-      input = "MMMSXXMASM"
-     in
-      slices (Grid [input]) `shouldBe` ["MMMSXXMASM", "MMSXXMASM", "MSXXMASM", "SXXMASM", "XXMASM", "XMASM", "MASM", "ASM", "SM", "M", "", "M", "", "M", "", "M", "", "S", "", "X", "", "X", "", "M", "", "A", "", "S", "", "M", "", ""]
-
   it "horizontal and vertical slices" $
     let
       input :: Grid Char
@@ -61,13 +54,29 @@ spec = describe "Day 4" $ do
       expected :: [[Char]]
       expected = ["MSXA", "SXA", "XA", "A", "", "MSAM", "SAM", "AM", "M", "", "AMXS", "MXS", "XS", "S", "", "MMA", "MA", "A", "", "SSM", "SM", "M", "", "XAX", "AX", "X", "", "AMS", "MS", "S", ""]
      in
-      (horizontalSlices input ++ verticalSlices input) `shouldBe` expected
+      (horizontalTails (grid input) ++ verticalTails (grid input)) `shouldBe` expected
 
   it "parse xmas" $
     parse "XMASM" `shouldBe` Just Xmas
 
   it "findOccurrences in one line" $
-    findXmasOccurrences (Grid ["MMMSXXMASM"]) `shouldBe` (Occurrences [Xmas] [] [])
+    findXmasOccurrences (Grid ["MMMSXXMASM"]) `shouldBe` (Occurrences [Xmas] [] [] [])
+
+  it "rotate diagonals to vertical columns" $
+    rotateDiagonals [[1, 2, 3], [4, 5, 6], [7, 8, 9]] `shouldBe` [[[3, 2, 1], [5, 4], [7]], [[6, 5, 4], [8, 7]], [[9, 8, 7]]]
+
+  it "forward diagonals tails" $
+    diagonalTails [[1, 2, 3], [4, 5, 6], [7, 8, 9]] `shouldBe` [[1, 5, 9], [2, 6], [3], [4, 8], [5, 9], [6], [7], [8], [9]]
+
+  it "rotate backward diagonals to vertical columns" $
+    rotateBackwardDiagonals [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+      `shouldBe` [ [[3, 2, 1], [5, 4], [7]]
+                 , [[6, 5, 4], [8, 7]]
+                 , [[9, 8, 7]]
+                 ]
+
+  it "backward diagonals tails" $
+    backwardDiagonalTails [[1, 2, 3], [4, 5, 6], [7, 8, 9]] `shouldBe` [[3, 5, 7], [5, 7], [7], [], [2, 4], [4], [], [1], []]
 
   it "findOccurrences in puzzle example" $
     findXmasOccurrences (parseGrid example)
@@ -75,6 +84,7 @@ spec = describe "Day 4" $ do
         { horizontal = [Xmas, Samx, Xmas, Samx, Xmas]
         , vertical = [Samx, Xmas, Samx]
         , diagonal = [Samx, Xmas, Samx, Samx, Samx, Samx, Xmas, Xmas, Xmas, Xmas]
+        , backwardDiagonal = []
         }
 
   it "part1" $
