@@ -1,7 +1,6 @@
 module Day3 where
 
 import Control.Applicative (Alternative ((<|>)), many)
-import Data.Bifunctor (Bifunctor (bimap))
 import Data.Foldable (Foldable (foldl'))
 import Data.Semigroup (Sum (..))
 import qualified Data.Text as T
