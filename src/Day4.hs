@@ -41,38 +41,32 @@ countAll o =
     + length (diagonal o)
     + length (backwardDiagonal o)
 
-horizontalTails :: [[a]] -> [[a]]
-horizontalTails = concatMap tails
+rows :: Grid a -> [[a]]
+rows = grid
 
-verticalTails :: [[a]] -> [[a]]
-verticalTails = horizontalTails . transpose
+columns :: Grid a -> [[a]]
+columns = transpose . grid
 
-rotateDiagonals :: [[a]] -> [[[a]]]
-rotateDiagonals =
-  filter (not . null)
-    . fmap
-      ( filter (not . null)
-          . fmap (uncurry drop)
-          . zip [0 ..]
-      )
+diagonals :: Grid a -> [[a]]
+diagonals =
+  concatMap
+    ( (columns . Grid)
+        . fmap (uncurry drop)
+        . zip [0 ..]
+    )
     . tails
+    . grid
 
-diagonalTails :: [[a]] -> [[a]]
-diagonalTails = concatMap (filter (not . null) . verticalTails) . rotateDiagonals
-
-rotateBackwardDiagonals :: [[a]] -> [[[a]]]
-rotateBackwardDiagonals = rotateDiagonals . fmap reverse
-
-backwardDiagonalTails :: [[a]] -> [[a]]
-backwardDiagonalTails = concatMap verticalTails . rotateBackwardDiagonals
+backwardDiagonals :: Grid a -> [[a]]
+backwardDiagonals = diagonals . Grid . fmap reverse . grid
 
 findOccurrences :: ([a] -> Maybe b) -> Grid a -> Occurrences b
 findOccurrences p =
   Occurrences
-    <$> mapMaybe p . horizontalTails . grid
-    <*> mapMaybe p . verticalTails . grid
-    <*> mapMaybe p . diagonalTails . grid
-    <*> mapMaybe p . backwardDiagonalTails . grid
+    <$> (concatMap (mapMaybe p . tails) . rows)
+    <*> (concatMap (mapMaybe p . tails) . columns)
+    <*> mapMaybe p . diagonals -- no need for tails: we already precalculate partial diagonals
+    <*> mapMaybe p . backwardDiagonals
 
 parse :: String -> Maybe Xmas
 parse ('X' : 'M' : 'A' : 'S' : _) = Just Xmas
