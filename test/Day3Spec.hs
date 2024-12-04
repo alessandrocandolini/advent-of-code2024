@@ -10,13 +10,13 @@ import Test.Hspec (Spec, describe, it, shouldBe)
 example1 :: T.Text
 example1 = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
 
-expected1 :: [Operation]
+expected1 :: [Instruction]
 expected1 = [Mul 2 4, Mul 5 5, Mul 11 8, Mul 8 5]
 
 example2 :: T.Text
 example2 = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
 
-expected2 :: [Operation]
+expected2 :: [Instruction]
 expected2 = [Mul 2 4, Dont, Mul 5 5, Mul 11 8, Do, Mul 8 5]
 
 spec :: Spec
@@ -52,7 +52,7 @@ spec = describe "Day 3" $ do
     parseAll example2 `shouldBePretty` Right expected2
 
   it "map including do/dont operations" $
-    includeDoDontOperations expected2 `shouldBe` [Multiply 2 4, Multiply 8 5]
+    interpreter expected2 `shouldBe` [Multiply 2 4, Multiply 8 5]
 
   it "answer part 1" $
     logic example1 `shouldBePretty` Right (Answer 161 161)

@@ -1,6 +1,7 @@
 module Day3 where
 
 import Control.Applicative (Alternative ((<|>)), many)
+import Data.Bifunctor (Bifunctor (bimap))
 import Data.Foldable (Foldable (foldl'))
 import Data.Semigroup (Sum (..))
 import qualified Data.Text as T
@@ -17,13 +18,13 @@ program = (=<<) print . fmap logic . T.readFile
 
 data Answer = Answer Int Int deriving (Eq, Show)
 
-answer :: [Operation] -> Answer
+answer :: [Instruction] -> Answer
 answer = Answer <$> part1 <*> part2
 
 logic :: T.Text -> Either ParsingError Answer
 logic = fmap answer . parseAll
 
-data Operation
+data Instruction
   = Mul Int Int
   | Do
   | Dont
@@ -37,35 +38,55 @@ eval (Multiply a b) = a * b
 evalAll :: [ArithmeticOperation] -> Int
 evalAll = getSum . foldMap (Sum . eval)
 
-part1 :: [Operation] -> Int
+part1 :: [Instruction] -> Int
 part1 = evalAll . mapMaybe ignoreDoDontOperations
  where
   ignoreDoDontOperations (Mul a b) = Just (Multiply a b)
   ignoreDoDontOperations _ = Nothing
 
-part2 :: [Operation] -> Int
-part2 = evalAll . includeDoDontOperations
+part2 :: [Instruction] -> Int
+part2 = evalAll . interpreter
 
-includeDoDontOperations :: [Operation] -> [ArithmeticOperation]
-includeDoDontOperations = reverse . snd . foldl' accumulate (True, [])
- where
-  accumulate :: (Bool, [ArithmeticOperation]) -> Operation -> (Bool, [ArithmeticOperation])
-  accumulate (True, accumulated) (Mul a b) = (True, Multiply a b : accumulated)
-  accumulate (False, accumulated) (Mul _ _) = (False, accumulated)
-  accumulate (_, accumulated) Dont = (False, accumulated)
-  accumulate (_, accumulated) Do = (True, accumulated)
+data Toggle = On | Off deriving (Eq, Show)
+
+data Memory = Memory
+  { toggle :: Toggle
+  , operations :: [ArithmeticOperation]
+  }
+  deriving (Eq, Show)
+
+data MemoryInstruction = SwitchToggle Toggle | AppendIfOn ArithmeticOperation deriving (Eq, Show)
+
+fromInstruction :: Instruction -> MemoryInstruction
+fromInstruction (Mul a b) = AppendIfOn (Multiply a b)
+fromInstruction Dont = SwitchToggle Off
+fromInstruction Do = SwitchToggle On
+
+empty :: Memory
+empty = Memory On []
+
+run :: Memory -> MemoryInstruction -> Memory
+run (Memory _ ops) (SwitchToggle t) = Memory t ops
+run (Memory On ops) (AppendIfOn o) = Memory On (o : ops)
+run m@(Memory Off _) (AppendIfOn _) = m
+
+runAll :: Memory -> [MemoryInstruction] -> Memory
+runAll = foldl' run
+
+interpreter :: [Instruction] -> [ArithmeticOperation]
+interpreter = reverse . operations . runAll empty . fmap fromInstruction
 
 type Parser = Parsec Void T.Text
 type ParsingError = ParseErrorBundle T.Text Void
 
-parser :: Parser [Operation]
+parser :: Parser [Instruction]
 parser = many (try (skipManyTill anySingle (try operationParser)))
 
-operationParser :: Parser Operation
+operationParser :: Parser Instruction
 operationParser =
   (Dont <$ string "don't()")
     <|> (Do <$ string "do()")
     <|> (Mul <$> (string "mul(" *> decimal <* char ',') <*> (decimal <* char ')'))
 
-parseAll :: T.Text -> Either ParsingError [Operation]
+parseAll :: T.Text -> Either ParsingError [Instruction]
 parseAll = runParser parser "input file"
