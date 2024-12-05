@@ -150,8 +150,20 @@ spec = describe "Day 4" $ do
         , backwardDiagonal = [Samx, Xmas, Samx, Samx, Samx]
         }
 
+  -- MSXA
+  -- MSAM
+  -- AMXS
+  it "get squares" $
+    squares3 (fmap T.unpack (T.lines simple))
+      `shouldBe` [ (('M', 'M', 'A'), ('S', 'S', 'M'), ('X', 'A', 'X'))
+                 , (('S', 'S', 'M'), ('X', 'A', 'X'), ('A', 'M', 'S'))
+                 ]
+
   it "part1" $
     (part1 . parseGrid) example `shouldBe` 18
 
+  it "part2" $
+    (part2 . parseGrid) example `shouldBe` 9
+
   it "logic" $
-    logic example `shouldBe` Answer 18
+    logic example `shouldBe` (Answer 18 9)
