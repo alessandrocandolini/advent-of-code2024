@@ -4,7 +4,7 @@
 
 ## How to build and run locally
 
-The project uses the [Haskell tool stack](https://docs.haskellstack.org/en/stable/README/).
+The project uses the [Haskell tool stack](https://docs.haskellstack.org/en/stable/README/). The recommended way to install stack is by using [ghcup](https://www.haskell.org/ghcup/), although it's also possible to use [the nix package manager](https://nixos.org/). 
 
 Assuming `stack` is installed in the system, to **build** the project use 
 ```
@@ -18,7 +18,11 @@ which is equivalent to
 ```
 stack build --test
 ```
-To run with **test coverage**
+For **faster feedback loop** during development, it's possible to run tests continuously on every file change: 
+```
+stack test --fast --file-watch
+```
+To run tests with **test coverage** instrumentation, 
 ```
 stack test --coverage
 ```
@@ -32,21 +36,16 @@ or passing arguments
 ```
 stack exec aoc2024 -- run -d <day> -f <filename> 
 ```
-
-For **faster feedback loop**,
-```
-stack test --fast --file-watch
-```
-
-To run **benchmarks**
+To run the **benchmarks**
 ```
 stack bench --benchmark-arguments="--output report.html"
 ```
-Benchmarks are run by the CI, and reports are only uploaded as part of the CI artifacts, ie, there is no way to track performance evolution. 
+which generates a `report.html` HTML report. 
+Benchmarks are NOT run as part of the CI, to keep the CI fast.
 
-To install the executable under `~/.local/bin`, 
+To **install** the executable under `~/.local/bin`, 
 ```
- stack install
+stack install
 ```
 and the executable can be run with `aoc2024` or passing arguments like 
 ```
@@ -54,7 +53,7 @@ aoc2024 run -d 1 -f inputs/day1
 ```
 assuming `~/.local/bin` is in the `$PATH` variable. 
 
-To run **ghci** (with a version compatible with the resolver) run
+To run a version of **ghci** compatible with the resolver 
 ```
 stack ghci
 ```
