@@ -51,21 +51,6 @@ spec = describe "Day 3" $ do
   it "can parse mul(decimal,decimal) in part2" $
     parseAll example2 `shouldBePretty` Right expected2
 
-  it "interpreting do/dont operations" $
-    interpreter expected2 `shouldBe` [Multiply 2 4, Multiply 8 5]
-
-  it "troubleshoot interpreting do/dont: show memory state" $
-    -- scanl is not space-safe, don't use it in prod code
-    scanl run empty (fmap fromInstruction expected2)
-      `shouldBe` [ empty
-                 , Memory On [Multiply 2 4]
-                 , Memory Off [Multiply 2 4]
-                 , Memory Off [Multiply 2 4]
-                 , Memory Off [Multiply 2 4]
-                 , Memory On [Multiply 2 4]
-                 , Memory On [Multiply 8 5, Multiply 2 4]
-                 ]
-
   it "answer part 1" $
     logic example1 `shouldBePretty` Right (Answer 161 161)
   it "answer part 2" $

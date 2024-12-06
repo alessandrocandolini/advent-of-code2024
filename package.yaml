@@ -21,6 +21,7 @@ dependencies:
 - comonad
 - adjunctions
 - logict
+- machines
 
 default-extensions:
 - OverloadedStrings
