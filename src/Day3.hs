@@ -39,10 +39,10 @@ evalAll :: [ArithmeticOperation] -> Int
 evalAll = getSum . foldMap (Sum . eval)
 
 part1 :: [Instruction] -> Int
-part1 = evalAll . mapMaybe ignoreDoDontOperations
+part1 = evalAll . mapMaybe ignoreDoDontInstructions
  where
-  ignoreDoDontOperations (Mul a b) = Just (Multiply a b)
-  ignoreDoDontOperations _ = Nothing
+  ignoreDoDontInstructions (Mul a b) = Just (Multiply a b)
+  ignoreDoDontInstructions _ = Nothing
 
 part2 :: [Instruction] -> Int
 part2 = evalAll . process
