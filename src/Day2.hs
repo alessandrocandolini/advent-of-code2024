@@ -1,6 +1,6 @@
 {-# LANGUAGE DerivingVia #-}
 
-module Day2 (Answer (..), Report (..), Level (..), program, logic, monotonic, boundPairwiseDistance, parseLines, parseLine, part1, part2, isReportSafe1, isReportSafe2, allButOne) where
+module Day2 (Answer (..), Report (..), Level (..), program, logic, isMonotonic, pairwiseDistanceAlwaysLessThan, parseLines, parseLine, part1, part2, isReportSafe1, isReportSafe2, allButOne) where
 
 import Control.Applicative (many)
 import Data.List (group, inits, tails)
@@ -42,14 +42,14 @@ part2 = count isReportSafe2
 count :: (a -> Bool) -> [a] -> Int
 count p = length . filter p
 
-monotonic :: (Ord a) => [a] -> Bool
-monotonic = isNullOrSingleton . group . compareWithNext
+isMonotonic :: (Ord a) => [a] -> Bool
+isMonotonic = isNullOrSingleton . group . compareWithNext
  where
+  compareWithNext :: (Ord b) => [b] -> [Ordering]
+  compareWithNext bs = zipWith compare bs (tail bs)
   isNullOrSingleton [] = True
   isNullOrSingleton [_] = True
   isNullOrSingleton (_ : _) = False
-  compareWithNext :: (Ord b) => [b] -> [Ordering]
-  compareWithNext bs = zipWith compare bs (tail bs)
 
 distance :: (Num a) => a -> a -> a
 distance = (abs .) . (-)
@@ -57,11 +57,11 @@ distance = (abs .) . (-)
 pairwiseDistances :: (Num a) => [a] -> [a]
 pairwiseDistances as = uncurry distance <$> zip as (tail as)
 
-boundPairwiseDistance :: (Ord a, Num a) => [a] -> Bool
-boundPairwiseDistance = maybe True ((<= 3) . maximum) . N.nonEmpty . pairwiseDistances
+pairwiseDistanceAlwaysLessThan :: (Ord a, Num a) =>a -> [a] -> Bool
+pairwiseDistanceAlwaysLessThan threshold = maybe True ((<= threshold) . maximum) . N.nonEmpty . pairwiseDistances
 
 isSafe1 :: (Ord a, Num a) => [a] -> Bool
-isSafe1 as = monotonic as && boundPairwiseDistance as
+isSafe1 as = isMonotonic as && pairwiseDistanceAlwaysLessThan 3 as
 
 isReportSafe1 :: Report -> Bool
 isReportSafe1 = isSafe1 . levels

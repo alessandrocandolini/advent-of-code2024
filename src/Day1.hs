@@ -1,4 +1,4 @@
-module Day1 (logic, part1, part2, parse, program, Answer (..)) where
+module Day1 (logic, part1, part2, parseAll, program, Answer (..)) where
 
 import Data.Bifunctor (Bifunctor (second), bimap)
 import qualified Data.HashMap.Strict as HashMap
@@ -9,8 +9,8 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Tuple (swap)
 import Data.Void (Void)
-import Text.Megaparsec (Parsec, optional, runParser)
-import Text.Megaparsec.Char (eol, space)
+import Text.Megaparsec (Parsec, runParser, sepBy)
+import Text.Megaparsec.Char (newline, space)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
 
@@ -52,10 +52,10 @@ type Parser = Parsec Void T.Text
 type ParsingError = ParseErrorBundle T.Text Void
 
 parser :: Parser (Int, Int)
-parser = (,) <$> (decimal <* space) <*> (decimal <* optional eol)
+parser = (,) <$> (decimal <* space) <*> decimal
 
-parse :: T.Text -> Either ParsingError (Int, Int)
-parse = runParser parser "input file"
+parserAll :: Parser [(Int, Int)]
+parserAll = sepBy parser newline
 
 parseAll :: T.Text -> Either ParsingError [(Int, Int)]
-parseAll = traverse parse . T.lines
+parseAll = runParser parserAll "input file"
