@@ -3,11 +3,10 @@
 module Day2Spec where
 
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import Day2 (Answer (..), Level (..), Report (..), allButOne, boundPairwiseDistance, isReportSafe1, isReportSafe2, logic, monotonic, parseLine, parseLines, part1, part2)
+import Day2 (Answer (..), Report (..), allButOne, pairwiseDistanceAlwaysLessThan, isReportSafe1, isReportSafe2, logic, isMonotonic, parseLine, parseLines, part1, part2)
 import NeatInterpolation (trimming)
 import SpecUtils (shouldBePretty)
-import Test.Hspec (Spec, describe, it, shouldBe, xit)
+import Test.Hspec (Spec, describe, it, shouldBe)
 import Test.Hspec.QuickCheck ()
 import Test.QuickCheck ()
 
@@ -22,25 +21,27 @@ example =
     1 3 6 7 9
  |]
 
+boundPairwiseDistance = pairwiseDistanceAlwaysLessThan 3
+
 spec :: Spec
 spec = describe "Day 2" $ do
-  it "monotonic works on empty lists" $
-    monotonic ([] :: [Int]) `shouldBe` True
+  it "isMonotonic works on empty lists" $
+    isMonotonic ([] :: [Int]) `shouldBe` True
 
-  it "monotonic works on singleton lists" $
-    monotonic [1] `shouldBe` True
+  it "isMonotonic works on singleton lists" $
+    isMonotonic [1] `shouldBe` True
 
-  it "monotonic increasing" $
-    monotonic [1, 4, 7, 9, 100] `shouldBe` True
+  it "isMonotonic increasing" $
+    isMonotonic [1, 4, 7, 9, 100] `shouldBe` True
 
-  it "monotonic decreasing" $
-    monotonic [100, 9, 7, 4, 1] `shouldBe` True
+  it "isMonotonic decreasing" $
+    isMonotonic [100, 9, 7, 4, 1] `shouldBe` True
 
-  it "non monotonic (increasing an decreasing)" $
-    monotonic [1, 4, 7, 6, 100] `shouldBe` False
+  it "non isMonotonic (increasing an decreasing)" $
+    isMonotonic [1, 4, 7, 6, 100] `shouldBe` False
 
-  it "non monotonic (neither increasing or decreasing)" $
-    monotonic [1, 4, 7, 7, 100] `shouldBe` False
+  it "non isMonotonic (neither increasing or decreasing)" $
+    isMonotonic [1, 4, 7, 7, 100] `shouldBe` False
 
   it "boundPairwiseDistance works on empty lists" $
     boundPairwiseDistance ([] :: [Int]) `shouldBe` True
