@@ -20,8 +20,8 @@ dependencies:
 - pretty
 - comonad
 - adjunctions
-- logict
 - machines
+- algebraic-graphs
 
 default-extensions:
 - OverloadedStrings
