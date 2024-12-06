@@ -1,7 +1,8 @@
 module Day3 where
 
 import Control.Applicative (Alternative ((<|>)), many)
-import Data.Foldable (Foldable (foldl'))
+import Data.Machine (Mealy)
+import qualified Data.Machine as M
 import Data.Semigroup (Sum (..))
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -10,7 +11,7 @@ import Text.Megaparsec (MonadParsec (try), Parsec, anySingle, runParser, skipMan
 import Text.Megaparsec.Char (char, string)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
-import Witherable (mapMaybe)
+import Witherable (catMaybes, mapMaybe)
 
 program :: FilePath -> IO ()
 program = (=<<) print . fmap logic . T.readFile
@@ -44,36 +45,26 @@ part1 = evalAll . mapMaybe ignoreDoDontOperations
   ignoreDoDontOperations _ = Nothing
 
 part2 :: [Instruction] -> Int
-part2 = evalAll . interpreter
+part2 = evalAll . process
 
 data Toggle = On | Off deriving (Eq, Show)
 
-data Memory = Memory
-  { toggle :: Toggle
-  , operations :: [ArithmeticOperation]
-  }
-  deriving (Eq, Show)
+toggle :: Mealy Instruction (Maybe ArithmeticOperation)
+toggle = M.unfoldMealy step On
+ where
+  step :: Toggle -> Instruction -> (Maybe ArithmeticOperation, Toggle)
+  step _ Do = (Nothing, On)
+  step _ Dont = (Nothing, Off)
+  step On (Mul a b) = (Just (Multiply a b), On)
+  step Off (Mul _ _) = (Nothing, Off)
 
-data MemoryInstruction = SwitchToggle Toggle | AppendIfOn ArithmeticOperation deriving (Eq, Show)
+feedInstructions :: Mealy Instruction (Maybe ArithmeticOperation) -> [Instruction] -> [Maybe ArithmeticOperation]
+feedInstructions machine = M.run . (M.auto machine M.<~) . M.source
 
-fromInstruction :: Instruction -> MemoryInstruction
-fromInstruction (Mul a b) = AppendIfOn (Multiply a b)
-fromInstruction Dont = SwitchToggle Off
-fromInstruction Do = SwitchToggle On
+process :: [Instruction] -> [ArithmeticOperation]
+process = catMaybes . feedInstructions toggle
 
-empty :: Memory
-empty = Memory On []
-
-run :: Memory -> MemoryInstruction -> Memory
-run (Memory _ ops) (SwitchToggle t) = Memory t ops
-run (Memory On ops) (AppendIfOn o) = Memory On (o : ops)
-run m@(Memory Off _) (AppendIfOn _) = m
-
-runAll :: Memory -> [MemoryInstruction] -> Memory
-runAll = foldl' run
-
-interpreter :: [Instruction] -> [ArithmeticOperation]
-interpreter = reverse . operations . runAll empty . fmap fromInstruction
+-- parsing
 
 type Parser = Parsec Void T.Text
 type ParsingError = ParseErrorBundle T.Text Void
