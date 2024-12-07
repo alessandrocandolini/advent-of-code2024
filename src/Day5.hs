@@ -32,7 +32,7 @@ import Witherable (catMaybes, mapMaybe)
 program :: FilePath -> IO ()
 program = (=<<) print . fmap logic . T.readFile
 
-data Answer = Answer Int deriving (Eq, Show)
+data Answer = Answer Int Int deriving (Eq, Show)
 
 data GraphResolutionError a = GraphResolutionError (Cycle a) [(a, a)] [a] deriving (Eq)
 data Error = EvaluationError (GraphResolutionError Page) | ParsingInputError ParsingError deriving (Eq, Show)
@@ -56,7 +56,10 @@ instance (Show a) => Show (GraphResolutionError a) where
 type Input = ([Rule], [[Page]])
 
 answer :: Input -> Either (GraphResolutionError Page) Answer
-answer = fmap Answer . uncurry part1
+answer input = do
+  p1 <- uncurry part1 input
+  p2 <- uncurry part2 input
+  pure (Answer p1 p2)
 
 logic :: T.Text -> Either Error Answer
 logic =
@@ -104,8 +107,16 @@ part1 rules = fmap (sumMiddle pageScore . catMaybes) . traverse (isSorted rules'
  where
   rules' = fmap toPair rules
 
+part2 :: [Rule] -> [[Page]] -> Either (GraphResolutionError Page) Int
+part2 rules = fmap (sumMiddle pageScore . catMaybes) . traverse (isNotSorted rules')
+ where
+  rules' = fmap toPair rules
+
 isSorted :: (Ord a) => [(a, a)] -> [a] -> Either (GraphResolutionError a) (Maybe [a])
 isSorted rules as = fmap (mfilter (as ==) . Just) (sortByRules rules as)
+
+isNotSorted :: (Ord a) => [(a, a)] -> [a] -> Either (GraphResolutionError a) (Maybe [a])
+isNotSorted rules as = fmap (mfilter (as /=) . Just) (sortByRules rules as)
 
 sortByRules :: (Ord a) => [(a, a)] -> [a] -> Either (GraphResolutionError a) [a]
 sortByRules rules as = fmap (`sortBy` as) (calculateOrderingByApplicableRules rules as)

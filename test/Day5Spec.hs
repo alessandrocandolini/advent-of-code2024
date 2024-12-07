@@ -105,7 +105,7 @@ spec = describe "Day 5" $ do
     sortByRules [(1, 2), (2, 3), (3, 4), (4, 3), (11, 10), (8, 11), (9, 11)] [2, 11, 8] `shouldBe` Right [2, 8, 11]
 
   xit "not sorted list (case with transitive dependencies, and global cyclic unrelevant dependencies), excluding because the exercise DOES include transitive dependencies" $ do
-    sortByRules [(1, 2), (2, 3), (3, 4), (4, 3), (11, 10), (8, 10), (9, 11)] [2, 11, 8] `shouldBe` Right [2, 8, 11]
+    sortByRules [(1, 2), (2, 3), (3, 4), (4, 3), (10, 11), (8, 10)] [2, 11, 8] `shouldBe` Right [2, 8, 11]
 
   it "a complex example with transitive cyclic dependencies, eg (96, 82), (82, 95), (95, 87), (87, 96) " $ do
     let
@@ -114,7 +114,4 @@ spec = describe "Day 5" $ do
     sortByRules rules input `shouldBe` Right input
 
   it "answer" $ do
-    logic example `shouldBe` (Right (Answer 143))
-
-  prop "" $
-    \l -> reverse (reverse l) == (l :: [Int])
+    logic example `shouldBe` (Right (Answer 143 123))
