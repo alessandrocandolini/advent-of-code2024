@@ -49,20 +49,27 @@ part2 = evalAll . process
 
 data Toggle = On | Off deriving (Eq, Show)
 
-toggle :: Mealy Instruction (Maybe ArithmeticOperation)
-toggle = M.unfoldMealy step On
- where
-  step :: Toggle -> Instruction -> (Maybe ArithmeticOperation, Toggle)
-  step _ Do = (Nothing, On)
-  step _ Dont = (Nothing, Off)
-  step On (Mul a b) = (Just (Multiply a b), On)
-  step Off (Mul _ _) = (Nothing, Off)
+toggle :: (a -> Either Toggle b) -> Mealy a (Maybe b)
+toggle p = M.unfoldMealy (step p) On
 
-feedInstructions :: Mealy Instruction (Maybe ArithmeticOperation) -> [Instruction] -> [Maybe ArithmeticOperation]
-feedInstructions machine = M.run . (M.auto machine M.<~) . M.source
+step :: (a -> Either Toggle b) -> Toggle -> a -> (Maybe b, Toggle)
+step p t a = case (t, p a) of
+  (_, Left t') -> (Nothing, t')
+  (On, Right b) -> (Just b, On)
+  (Off, Right _) -> (Nothing, Off)
+
+filterByToggle :: (a -> Either Toggle b) -> [a] -> [b]
+filterByToggle p = catMaybes . M.run . (M.auto machine M.<~) . M.source
+ where
+  machine = toggle p
 
 process :: [Instruction] -> [ArithmeticOperation]
-process = catMaybes . feedInstructions toggle
+process = filterByToggle fromInstrunction
+ where
+  fromInstrunction :: Instruction -> Either Toggle ArithmeticOperation
+  fromInstrunction Do = Left On
+  fromInstrunction Dont = Left Off
+  fromInstrunction (Mul a b) = Right (Multiply a b)
 
 -- parsing
 
