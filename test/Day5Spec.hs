@@ -8,9 +8,10 @@ import qualified Data.Text as T
 import Day5
 import NeatInterpolation (trimming)
 import SpecUtils (shouldBePretty)
-import Test.Hspec (Spec, describe, it, shouldBe, xit)
+import Test.Hspec (Spec, describe, it, shouldBe, xit, shouldSatisfy)
 import Test.Hspec.QuickCheck
 import Test.QuickCheck
+import Data.Either (isLeft)
 
 simple :: T.Text
 simple =
@@ -100,6 +101,12 @@ spec = describe "Day 5" $ do
     let
       input = [68, 33, 82, 65, 23, 48, 67, 17, 87]
     sortByRules [] input `shouldBe` Right input
+
+  it "when there are inconsistent rules, should fail" $ do
+    sortByRules [(1, 2), (2, 1)] [1, 2, 3] `shouldSatisfy` isLeft
+
+  it "not sorted list (case with direct dependencies, and global cyclic unrelevant dependencies)" $ do
+    sortByRules [(1, 2), (2, 3), (3, 4), (4, 3), (11, 10), (8, 11), (9, 11)] [2, 11, 8] `shouldBe` Right [2, 8, 11]
 
   it "not sorted list (case with direct dependencies, and global cyclic unrelevant dependencies)" $ do
     sortByRules [(1, 2), (2, 3), (3, 4), (4, 3), (11, 10), (8, 11), (9, 11)] [2, 11, 8] `shouldBe` Right [2, 8, 11]

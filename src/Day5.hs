@@ -1,57 +1,73 @@
 {-# LANGUAGE DerivingVia #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
-{-# HLINT ignore "Use tuple-section" #-}
 
 module Day5 where
 
 import Algebra.Graph (edges)
 import Algebra.Graph.AdjacencyMap.Algorithm (Cycle)
-import qualified Algebra.Graph.AdjacencyMap.Algorithm
 import Algebra.Graph.ToGraph (topSort)
-import Control.Applicative (many)
 import Control.Monad (mfilter)
 import Data.Bifunctor (Bifunctor (first))
-import Data.List (intercalate, sortBy, unfoldr)
+import Data.List (intercalate, sortBy)
 import qualified Data.List.NonEmpty as N
 import Data.Map (Map)
 import qualified Data.Map.Strict as M
-import Data.Maybe (listToMaybe)
 import Data.Semigroup (Sum (..))
 import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Void (Void)
 import Safe (headMay)
-import Text.Megaparsec (MonadParsec (try), Parsec, anySingle, endBy, optional, runParser, sepBy, skipManyTill)
-import Text.Megaparsec.Char (char, newline, space, string)
+import System.Console.ANSI (
+  Color (..),
+  ColorIntensity (Dull),
+  ConsoleIntensity (BoldIntensity),
+  ConsoleLayer (Foreground),
+  SGR (Reset, SetColor, SetConsoleIntensity),
+  setSGRCode,
+ )
+import Text.Megaparsec (Parsec, endBy, runParser, sepBy)
+import Text.Megaparsec.Char (char, newline)
 import Text.Megaparsec.Char.Lexer (decimal)
-import Text.Megaparsec.Error (ParseErrorBundle, errorBundlePretty)
+import Text.Megaparsec.Error (ParseErrorBundle)
 import Witherable (catMaybes, mapMaybe)
 
 program :: FilePath -> IO ()
 program = (=<<) print . fmap logic . T.readFile
 
-data Answer = Answer Int Int deriving (Eq, Show)
-
 data GraphResolutionError a = GraphResolutionError (Cycle a) [(a, a)] [a] deriving (Eq)
-data Error = EvaluationError (GraphResolutionError Page) | ParsingInputError ParsingError deriving (Eq, Show)
 
-fullCycle :: Cycle a -> [(a, a)]
-fullCycle c = zip (N.toList c) (N.tail c ++ [N.head c])
+explicitCycle :: Cycle a -> [(a, a)]
+explicitCycle c = zip (N.toList c) (N.tail c ++ [N.head c])
 
-instance (Show a) => Show (GraphResolutionError a) where
-  show (GraphResolutionError c rules pages) =
+colorText :: Color -> String -> String
+colorText color text =
+  setSGRCode [SetColor Foreground Dull color, SetConsoleIntensity BoldIntensity] ++ text ++ setSGRCode [Reset]
+
+informativeMessage :: (Eq a, Show a) => GraphResolutionError a -> String
+informativeMessage (GraphResolutionError c rules as) =
+  let
+    c' = explicitCycle c
+    highlightRule rule
+      | elem rule c' = colorText Yellow (show rule)
+      | otherwise = show rule
+    highlightRules = intercalate ", " (fmap highlightRule rules)
+   in
     intercalate
-      "\n\n"
-      [ "Cyclic dependency detected: " ++ show c
-      , "while analysing the following list of pages:"
-      , show pages
-      , "Cycle:"
-      , show (fullCycle c)
-      , "Rules applied:"
-      , show rules
+      "\n"
+      [ "Circular dependency found: " ++ show c'
+      , "Input: " ++ show as
+      , "Rules: " ++ highlightRules
       ]
+
+instance (Eq a, Show a) => Show (GraphResolutionError a) where
+  show = informativeMessage
+
+data Error
+  = EvaluationError (GraphResolutionError Page)
+  | ParsingInputError ParsingError
+  deriving (Eq, Show)
+
+data Answer = Answer Int Int deriving (Eq, Show)
 
 type Input = ([Rule], [[Page]])
 
@@ -62,16 +78,14 @@ answer input = do
   pure (Answer p1 p2)
 
 logic :: T.Text -> Either Error Answer
-logic =
-  (=<<) (first EvaluationError . answer)
-    . ( first ParsingInputError
-          . parse
-      )
-
-data Rule = Rule Page Page deriving (Eq, Show)
+logic text = do
+  input <- first ParsingInputError (parse text)
+  first EvaluationError (answer input)
 
 newtype Page = Page Int
   deriving (Eq, Show, Num, Ord) via Int
+
+data Rule = Rule Page Page deriving (Eq, Show)
 
 toPair :: Rule -> (Page, Page)
 toPair (Rule p1 p2) = (p1, p2)
@@ -79,8 +93,8 @@ toPair (Rule p1 p2) = (p1, p2)
 pageScore :: Page -> Sum Int
 pageScore (Page p) = Sum p
 
-fromTopological :: (Ord a) => [a] -> (a -> a -> Ordering)
-fromTopological topological = p (index topological)
+calculateOrderingFromTopological :: (Ord a) => [a] -> (a -> a -> Ordering)
+calculateOrderingFromTopological topological = p (index topological)
  where
   index :: (Ord b) => [b] -> Map b Int
   index input = M.fromList (zip input [0 ..])
@@ -89,10 +103,10 @@ fromTopological topological = p (index topological)
     _ -> EQ
 
 calculateOrdering :: (Ord a) => [(a, a)] -> Either (Cycle a) (a -> a -> Ordering)
-calculateOrdering rules = fmap fromTopological (topSort (edges rules))
+calculateOrdering rules = fmap calculateOrderingFromTopological (topSort (edges rules))
 
-sumMiddle :: (Num b) => (a -> Sum b) -> [[a]] -> b
-sumMiddle p =
+sumMiddles :: (Num b) => (a -> Sum b) -> [[a]] -> b
+sumMiddles p =
   getSum
     . foldMap p
     . mapMaybe middle
@@ -103,12 +117,12 @@ middle as = headMay (drop half as)
   half = div (length as) 2
 
 part1 :: [Rule] -> [[Page]] -> Either (GraphResolutionError Page) Int
-part1 rules = fmap (sumMiddle pageScore . catMaybes) . traverse (isSorted rules')
+part1 rules = fmap (sumMiddles pageScore . catMaybes) . traverse (isSorted rules')
  where
   rules' = fmap toPair rules
 
 part2 :: [Rule] -> [[Page]] -> Either (GraphResolutionError Page) Int
-part2 rules = fmap (sumMiddle pageScore . catMaybes) . traverse (isNotSorted rules')
+part2 rules = fmap (sumMiddles pageScore . catMaybes) . traverse (isNotSorted rules')
  where
   rules' = fmap toPair rules
 
@@ -119,13 +133,14 @@ isNotSorted :: (Ord a) => [(a, a)] -> [a] -> Either (GraphResolutionError a) (Ma
 isNotSorted rules as = fmap (mfilter (as /=) . Just) (sortByRules rules as)
 
 sortByRules :: (Ord a) => [(a, a)] -> [a] -> Either (GraphResolutionError a) [a]
-sortByRules rules as = fmap (`sortBy` as) (calculateOrderingByApplicableRules rules as)
+sortByRules rules as = do
+  ordering <- calculateOrderingFilteringRules rules as
+  pure (sortBy ordering as)
 
-calculateOrderingByApplicableRules :: (Ord a) => [(a, a)] -> [a] -> Either (GraphResolutionError a) (a -> a -> Ordering)
-calculateOrderingByApplicableRules rules as = ordering
+calculateOrderingFilteringRules :: (Ord a) => [(a, a)] -> [a] -> Either (GraphResolutionError a) (a -> a -> Ordering)
+calculateOrderingFilteringRules rules as = first hydrateError (calculateOrdering rules')
  where
   rules' = applicableRules as rules
-  ordering = first hydrateError (calculateOrdering rules')
   hydrateError e = GraphResolutionError e rules' as
 
 -- keep only the subset of rules relevant for the current input
