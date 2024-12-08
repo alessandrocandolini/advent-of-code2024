@@ -2,6 +2,8 @@
 
 # advent-of-code2024
 
+<!--- advent_readme_stars table --->
+
 ## How to build and run locally
 
 The project uses the [Haskell tool stack](https://docs.haskellstack.org/en/stable/README/). The recommended way to install stack is by using [ghcup](https://www.haskell.org/ghcup/), although it's also possible to use [the nix package manager](https://nixos.org/). 
