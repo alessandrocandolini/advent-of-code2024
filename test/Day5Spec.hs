@@ -4,6 +4,7 @@
 module Day5Spec where
 
 import Control.Monad (when)
+import Data.Bifunctor (Bifunctor (first))
 import Data.Either (isLeft)
 import qualified Data.Text as T
 import Day5
@@ -104,6 +105,10 @@ spec = describe "Day 5" $ do
 
   it "when there are inconsistent rules, should fail" $ do
     sortByRules [(1, 2), (2, 1), (3, 4), (5, 6), (10, 11)] [1, 2, 3, 4, 5] `shouldBe` Left (GraphResolutionError [2, 1] [(1, 2), (2, 1), (3, 4)] [1, 2, 3, 4, 5])
+
+  it "check pretty printing of cyclic dependencies error" $ do
+    let expected = "Circular dependency found: [(2,1),(1,2)]\nInput: [1,2,3,4,5]\nRules: \ESC[33;1m(1,2)\ESC[0m, \ESC[33;1m(2,1)\ESC[0m, (3,4)"
+    first show (sortByRules [(1, 2), (2, 1), (3, 4), (5, 6), (10, 11)] [1, 2, 3, 4, 5]) `shouldBe` Left expected
 
   it "not sorted list (case with direct dependencies, and global cyclic unrelevant dependencies)" $ do
     sortByRules [(1, 2), (2, 3), (3, 4), (4, 3), (11, 10), (8, 11), (9, 11)] [2, 11, 8] `shouldBe` Right [2, 8, 11]
