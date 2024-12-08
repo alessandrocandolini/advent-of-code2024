@@ -45,31 +45,36 @@ part1 = evalAll . mapMaybe ignoreDoDontInstructions
   ignoreDoDontInstructions _ = Nothing
 
 part2 :: [Instruction] -> Int
-part2 = evalAll . process
+part2 = evalAll . processInstructions
 
 data Toggle = On | Off deriving (Eq, Show)
 
-toggle :: (a -> Either Toggle b) -> Mealy a (Maybe b)
+toggle :: (a -> Either Toggle b) -> Mealy a (Maybe (Toggle, b))
 toggle p = M.unfoldMealy (step p) On
+ where
+  step :: (a -> Either Toggle b) -> Toggle -> a -> (Maybe (Toggle, b), Toggle)
+  step q t a = case (t, q a) of
+    (_, Left t') -> (Nothing, t')
+    (On, Right b) -> (Just (On, b), On)
+    (Off, Right b) -> (Just (Off, b), Off)
 
-step :: (a -> Either Toggle b) -> Toggle -> a -> (Maybe b, Toggle)
-step p t a = case (t, p a) of
-  (_, Left t') -> (Nothing, t')
-  (On, Right b) -> (Just b, On)
-  (Off, Right _) -> (Nothing, Off)
-
-filterByToggle :: (a -> Either Toggle b) -> [a] -> [b]
-filterByToggle p = catMaybes . M.run . (M.auto machine M.<~) . M.source
+mapToggle :: (a -> Either Toggle b) -> [a] -> [(Toggle, b)]
+mapToggle p = catMaybes . M.run . (M.auto machine M.<~) . M.source
  where
   machine = toggle p
 
-process :: [Instruction] -> [ArithmeticOperation]
-process = filterByToggle fromInstruction
+filterByToggle :: (a -> Either Toggle b) -> ((Toggle, b) -> Bool) -> [a] -> [b]
+filterByToggle p q = map snd . filter q . mapToggle p
+
+processInstructions :: [Instruction] -> [ArithmeticOperation]
+processInstructions = filterByToggle fromInstruction isOn
  where
-  fromInstruction :: Instruction -> Either Toggle ArithmeticOperation
-  fromInstruction Do = Left On
-  fromInstruction Dont = Left Off
-  fromInstruction (Mul a b) = Right (Multiply a b)
+  isOn = (==) On . fst
+
+fromInstruction :: Instruction -> Either Toggle ArithmeticOperation
+fromInstruction Do = Left On
+fromInstruction Dont = Left Off
+fromInstruction (Mul a b) = Right (Multiply a b)
 
 -- parsing
 
