@@ -1,4 +1,5 @@
 [![CI](https://github.com/alessandrocandolini/advent-of-code2024/actions/workflows/ci.yml/badge.svg)](https://github.com/alessandrocandolini/advent-of-code2024/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/alessandrocandolini/advent-of-code2024/graph/badge.svg?token=yDHcPy0Gtx)](https://codecov.io/gh/alessandrocandolini/advent-of-code2024)
+[![Completion Status](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/alessandrocandolini/advent-of-code2024/main/.github/badges/completion.json)](https://adventofcode.com/2024)
 
 # advent-of-code2024
 
