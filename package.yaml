@@ -20,8 +20,9 @@ dependencies:
 - pretty
 - comonad
 - adjunctions
-- logict
 - machines
+- algebraic-graphs
+- ansi-terminal
 
 default-extensions:
 - OverloadedStrings
