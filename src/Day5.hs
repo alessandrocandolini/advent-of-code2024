@@ -17,19 +17,13 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Void (Void)
 import Safe (headMay)
-import System.Console.ANSI (
-  Color (..),
-  ColorIntensity (Dull),
-  ConsoleIntensity (BoldIntensity),
-  ConsoleLayer (Foreground),
-  SGR (Reset, SetColor, SetConsoleIntensity),
-  setSGRCode,
- )
+import System.Console.ANSI (Color (..))
 import Text.Megaparsec (Parsec, endBy, runParser, sepBy)
 import Text.Megaparsec.Char (char, newline)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
 import Witherable (catMaybes, mapMaybe)
+import Utils (colorText)
 
 program :: FilePath -> IO ()
 program = (=<<) print . fmap logic . T.readFile
@@ -38,10 +32,6 @@ data GraphResolutionError a = GraphResolutionError (Cycle a) [(a, a)] [a] derivi
 
 explicitCycle :: Cycle a -> [(a, a)]
 explicitCycle c = zip (N.toList c) (N.tail c ++ [N.head c])
-
-colorText :: Color -> String -> String
-colorText color text =
-  setSGRCode [SetColor Foreground Dull color, SetConsoleIntensity BoldIntensity] ++ text ++ setSGRCode [Reset]
 
 informativeMessage :: (Eq a, Show a) => GraphResolutionError a -> String
 informativeMessage (GraphResolutionError c rules as) =
