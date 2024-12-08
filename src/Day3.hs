@@ -64,12 +64,12 @@ filterByToggle p = catMaybes . M.run . (M.auto machine M.<~) . M.source
   machine = toggle p
 
 process :: [Instruction] -> [ArithmeticOperation]
-process = filterByToggle fromInstrunction
+process = filterByToggle fromInstruction
  where
-  fromInstrunction :: Instruction -> Either Toggle ArithmeticOperation
-  fromInstrunction Do = Left On
-  fromInstrunction Dont = Left Off
-  fromInstrunction (Mul a b) = Right (Multiply a b)
+  fromInstruction :: Instruction -> Either Toggle ArithmeticOperation
+  fromInstruction Do = Left On
+  fromInstruction Dont = Left Off
+  fromInstruction (Mul a b) = Right (Multiply a b)
 
 -- parsing
 
