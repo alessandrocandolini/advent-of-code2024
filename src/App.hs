@@ -1,6 +1,13 @@
 module App where
 
-import Args
+import Args (
+  Args (Args),
+  Command (..),
+  GenerateArgs (GenerateArgs),
+  StatsArgs (StatsArgs),
+  parseArgs,
+ )
+import CodeGenerator (program)
 import Day1 (program)
 import Day10 (program)
 import Day2 (program)
@@ -12,6 +19,7 @@ import Day7 (program)
 import Day8 (program)
 import Day9 (program)
 import Options.Applicative (handleParseResult)
+import Stats (program)
 import System.Environment (getArgs)
 
 program :: IO ()
@@ -30,4 +38,5 @@ program' (Run (Args 8 f)) = Day8.program f
 program' (Run (Args 9 f)) = Day9.program f
 program' (Run (Args 10 f)) = Day10.program f
 program' (Run (Args _ _)) = putStrLn "day not found"
-program' (Generate (GenerateArgs _)) = putStrLn "not implemented yet"
+program' (Generate (GenerateArgs d)) = CodeGenerator.program d
+program' (GetStats (StatsArgs year export)) = Stats.program year export

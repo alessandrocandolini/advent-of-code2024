@@ -23,6 +23,12 @@ dependencies:
 - machines
 - algebraic-graphs
 - ansi-terminal
+- envparse
+- req
+- bytestring
+- mtl
+- aeson
+- aeson-pretty
 
 default-extensions:
 - OverloadedStrings
