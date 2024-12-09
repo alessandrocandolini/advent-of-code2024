@@ -1,4 +1,4 @@
-name: CI
+name: Compile and run tests
 
 on:
   push:
@@ -27,13 +27,24 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Restore from cache
+    - name: Cache stack
       uses: actions/cache@v4
       with:
         path: |
-          ~/.stack
-          ~/.ghcup
-        key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-stack-${{ matrix.stack }}-${{ hashFiles('stack.yaml') }}
+          ~/.stack/build-plan
+          ~/.stack/indices
+          ~/.stack/snapshots
+          ~/.stack/global-project/.stack-work/install
+          ~/.ghcup/bin
+        key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-stack-${{ matrix.stack }}-${{ hashFiles('stack.yaml', 'stack.yaml.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-ghc-${{ matrix.ghc }}-stack-${{ matrix.stack }}-
+
+    - name: Cache GHC installation
+      uses: actions/cache@v4
+      with:
+        path: ~/.ghcup/ghc/${{ matrix.ghc }}
+        key: ${{ runner.os }}-ghc-${{ matrix.ghc }}
 
     - name: Setup Haskell Stack
       uses: haskell-actions/setup@v2
@@ -42,21 +53,26 @@ jobs:
         stack-version: ${{ matrix.stack }}
         enable-stack: true
 
+    - name: Validate GHC version
+      run: |
+        stack exec -- ghc --version
+        stack --version
+
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true' && success()
       timeout-minutes: 15
       run: |
-        stack build --system-ghc --test --no-run-tests --only-dependencies
+        stack build --test --no-run-tests --only-dependencies
 
     - name: Run tests with coverage
       timeout-minutes: 15
       run: |
-        stack test --system-ghc --test --coverage --fast
+        stack test --test --coverage --fast
 
     - name: Build
       timeout-minutes: 15
       run: |
-        stack build --system-ghc --test --no-run-tests
+        stack build --test --no-run-tests
 
     - name: Generate coverage report
       uses: 8c6794b6/hpc-codecov-action@v3
