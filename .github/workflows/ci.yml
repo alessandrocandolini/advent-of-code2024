@@ -62,17 +62,17 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true' && success()
       timeout-minutes: 15
       run: |
-        stack build --test --no-run-tests --only-dependencies
+        stack build --system-ghc --test --no-run-tests --only-dependencies
 
     - name: Run tests with coverage
       timeout-minutes: 15
       run: |
-        stack test --test --coverage --fast
+        stack test --system-ghc --test --coverage --fast
 
     - name: Build
       timeout-minutes: 15
       run: |
-        stack build --test --no-run-tests
+        stack build --system-ghc --test --no-run-tests
 
     - name: Generate coverage report
       uses: 8c6794b6/hpc-codecov-action@v3
