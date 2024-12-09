@@ -1,6 +1,6 @@
 # Stack
 .stack-work
-stack.yaml.lock
+# stack.yaml.lock
 .stack-work/
 .stack/
 *~
