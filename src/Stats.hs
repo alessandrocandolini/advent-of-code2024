@@ -7,7 +7,7 @@ import Args (StatsRender (..))
 import Control.Monad ((<=<))
 import Control.Monad.Except (ExceptT (..), runExceptT)
 import Data.Aeson (ToJSON, toJSON)
-import Data.Aeson.Encode.Pretty (encodePretty)
+import Data.Aeson.Encode.Pretty (Config (..), Indent (Spaces), defConfig, encodePretty')
 import Data.Aeson.Types (Value)
 import Data.Bifunctor (first)
 import qualified Data.ByteString.Char8 as B8
@@ -59,7 +59,8 @@ consoleRender =
     . starsCount
 
 jsonToText :: Value -> T.Text
-jsonToText = TL.toStrict . TLE.decodeUtf8 . encodePretty
+jsonToText = TL.toStrict . TLE.decodeUtf8 . encodePretty' config where
+ config = defConfig { confIndent = Spaces 2 }
 
 jsonRender :: Stats -> T.Text
 jsonRender = jsonToText . toJSON . toShieldConfig
