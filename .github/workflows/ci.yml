@@ -27,7 +27,7 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Cache stack
+    - name: Cache stack installation
       uses: actions/cache@v4
       with:
         path: |
@@ -35,7 +35,6 @@ jobs:
           ~/.stack/indices
           ~/.stack/snapshots
           ~/.stack/global-project/.stack-work/install
-          ~/.ghcup/bin
         key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-stack-${{ matrix.stack }}-${{ hashFiles('stack.yaml', 'stack.yaml.lock') }}
         restore-keys: |
           ${{ runner.os }}-ghc-${{ matrix.ghc }}-stack-${{ matrix.stack }}-
@@ -43,8 +42,15 @@ jobs:
     - name: Cache GHC installation
       uses: actions/cache@v4
       with:
-        path: ~/.ghcup/ghc/${{ matrix.ghc }}
-        key: ${{ runner.os }}-ghc-${{ matrix.ghc }}
+        path: |
+          ~/.ghcup/ghc/${{ matrix.ghc }}
+          ~/.ghcup/bin/stack-${{ matrix.stack }}
+        key: ${{ runner.os }}-ghc-${{ matrix.ghc }}-stack-${{ matrix.stack }}
+
+    - name: Debug cache content
+      run: |
+          [ -d ~/.ghcup ] && ls -la ~/.ghcup || echo "Directory ~/.ghcup does not exist"
+          [ -d ~/.stack ] && ls -la ~/.stack || echo "Directory ~/.stack does not exist"
 
     - name: Setup Haskell Stack
       uses: haskell-actions/setup@v2
@@ -52,11 +58,6 @@ jobs:
         ghc-version: ${{ matrix.ghc }}
         stack-version: ${{ matrix.stack }}
         enable-stack: true
-
-    - name: Validate GHC version
-      run: |
-        stack exec -- ghc --version
-        stack --version
 
     - name: Install dependencies
       if: steps.cache.outputs.cache-hit != 'true' && success()
