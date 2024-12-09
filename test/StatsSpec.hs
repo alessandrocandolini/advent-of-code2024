@@ -19,10 +19,10 @@ exampleRender :: T.Text
 exampleRender =
   [trimming|
 {
-    "color": "green",
-    "label": "stars ⭐️",
-    "message": "10",
-    "schemaVersion": 1
+  "color": "green",
+  "label": "stars ⭐️",
+  "message": "10",
+  "schemaVersion": 1
 }
 |]
 
