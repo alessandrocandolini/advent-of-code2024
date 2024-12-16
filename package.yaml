@@ -19,6 +19,7 @@ dependencies:
 - data-fix
 - pretty
 - comonad
+- distributive
 - adjunctions
 - machines
 - algebraic-graphs
@@ -29,6 +30,7 @@ dependencies:
 - mtl
 - aeson
 - aeson-pretty
+- array
 
 default-extensions:
 - OverloadedStrings
