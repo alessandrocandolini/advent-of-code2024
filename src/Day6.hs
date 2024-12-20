@@ -72,8 +72,9 @@ instance Representable Grid where
 associatedList :: [[a]] -> [(Position, a)]
 associatedList = concatMap (\(j, row) -> zipWith (\i a -> ((i, j), a)) [0 ..] row) . zip [0 ..]
 
-dimensions :: [[a]] -> (X,Y)
-dimensions as = (numberOfColumns, numberOfRows) where
+dimensions :: [[a]] -> (X, Y)
+dimensions as = (numberOfColumns, numberOfRows)
+ where
   numberOfRows = Y (length as)
   numberOfColumns = maybe 0 (X . length) (headMay as)
 
@@ -106,14 +107,14 @@ type LabMap = Store Grid Cell
 
 -- algebra
 
-currentGuardPosition :: LabMap -> Maybe (Position, Direction)
-currentGuardPosition = undefined
+currentGuard :: LabMap -> Maybe (Position, Direction)
+currentGuard = undefined
 
 checkAvailability :: LabMap -> Position -> Cell
 checkAvailability = undefined
 
-moveGuardToPosition :: LabMap -> Position -> LabMap
-moveGuardToPosition = undefined
+moveGuard :: LabMap -> Position -> Direction -> LabMap
+moveGuard = undefined
 
 data Move = MoveTo Position Direction | GameOver
 
