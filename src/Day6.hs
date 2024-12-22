@@ -26,6 +26,7 @@ import Text.Megaparsec (Parsec, runParser, sepBy)
 import Text.Megaparsec.Char (char, newline)
 import Text.Megaparsec.Error (ParseErrorBundle)
 import Witherable (mapMaybe)
+import Prelude hiding (init)
 
 data Error
   = ParsingError ParserError
@@ -100,8 +101,8 @@ arrayToGrid defaultValue as = Grid g
 
 type LabMap = Store Grid Cell
 
-initialLabMap :: [[Cell]] -> Maybe LabMap
-initialLabMap cells = fmap (store initialGrid . fst) initialPatrol
+init :: [[Cell]] -> Maybe LabMap
+init cells = fmap (store initialGrid . fst) initialPatrol
  where
   cellsArray = listToArray cells
   initialGrid = ungrid (arrayToGrid OutOfbounds cellsArray)
@@ -192,7 +193,7 @@ countUnique = length . nub
 loadAndWalk :: [[Cell]] -> Either Error [(Position, Direction)]
 loadAndWalk cells =
   walk
-    <$> maybeToRight WalkerMissing (initialLabMap cells)
+    <$> maybeToRight WalkerMissing (init cells)
 
 -- parsing
 
