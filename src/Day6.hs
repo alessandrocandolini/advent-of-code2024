@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module Day6 where
@@ -14,6 +15,8 @@ import Data.Either.Combinators (maybeToRight)
 import Data.Functor (($>))
 import Data.Functor.Rep
 import Data.List (nub, unfoldr)
+import Data.List.NonEmpty (NonEmpty)
+import qualified Data.List.NonEmpty as N
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -36,7 +39,7 @@ type Position = (X, Y)
 data Cell
   = OpenSpace
   | Obstruction
-  | Guard Direction
+  | Patrol Direction
   | OutOfbounds
   deriving (Eq, Show)
 
@@ -47,7 +50,7 @@ data Direction
   | West
   deriving (Eq, Show, Enum, Bounded)
 
-directionsClockwise :: Direction -> [Direction]
+directionsClockwise :: Direction -> NonEmpty Direction
 directionsClockwise North = [North, East, South, West]
 directionsClockwise East = [East, South, West, North]
 directionsClockwise South = [South, West, North, East]
@@ -78,13 +81,15 @@ dimensions as = (numberOfColumns, numberOfRows)
   numberOfRows = Y (length as)
   numberOfColumns = maybe 0 (X . length) (headMay as)
 
+corners :: [[a]] -> ((X, Y), (X, Y))
+corners as = ((0, 0), (width - 1, height - 1))
+ where
+  (width, height) = dimensions as
+
 -- will throw at runtime if grid is not rectangular
 -- array is also a strict function of the bounds and coordinates
 listToArray :: [[a]] -> Array Position a
-listToArray as = array corners (associatedList as)
- where
-  (width, height) = dimensions as
-  corners = ((0, 0), (width - 1, height - 1))
+listToArray as = array (corners as) (associatedList as)
 
 arrayToGrid :: a -> Array Position a -> Grid a
 arrayToGrid defaultValue as = Grid g
@@ -93,80 +98,79 @@ arrayToGrid defaultValue as = Grid g
     | inRange (bounds as) p = as ! p
     | otherwise = defaultValue
 
-initialLabMap :: [[Cell]] -> Maybe (LabMap, Position, Direction)
-initialLabMap cells = fmap (\p -> (store initialGrid (fst p), fst p, snd p)) initialHead
+type LabMap = Store Grid Cell
+
+initialLabMap :: [[Cell]] -> Maybe LabMap
+initialLabMap cells = fmap (store initialGrid . fst) initialPatrol
  where
   cellsArray = listToArray cells
   initialGrid = ungrid (arrayToGrid OutOfbounds cellsArray)
-  initialHead = headMay (mapMaybe headPositionAndDirection (assocs cellsArray))
-  headPositionAndDirection :: (Position, Cell) -> Maybe (Position, Direction)
-  headPositionAndDirection (p, Guard d) = Just (p, d)
-  headPositionAndDirection _ = Nothing
+  initialPatrol = headMay (mapMaybe extractPatrolPositionAndDirection (assocs cellsArray))
+  extractPatrolPositionAndDirection :: (Position, Cell) -> Maybe (Position, Direction)
+  extractPatrolPositionAndDirection (p, Patrol d) = Just (p, d)
+  extractPatrolPositionAndDirection _ = Nothing
 
-type LabMap = Store Grid Cell
+patrolPosition :: LabMap -> Position
+patrolPosition = pos
 
--- algebra
+inspectPosition :: LabMap -> Position -> Cell
+inspectPosition m p = peek p m
 
-currentGuard :: LabMap -> Maybe (Position, Direction)
-currentGuard = undefined
+-- we are abusing the grid to store also the direction. As a downside, the operation has to return Maybe :(
+directionFromPosition :: LabMap -> Position -> Maybe Direction
+directionFromPosition m p = case inspectPosition m p of
+  Patrol d -> Just d
+  _ -> Nothing
 
-checkAvailability :: LabMap -> Position -> Cell
-checkAvailability = undefined
+patrol :: LabMap -> Maybe (Position, Direction)
+patrol m = do
+  let p = patrolPosition m
+  d <- directionFromPosition m p
+  pure (p, d)
 
-moveGuard :: LabMap -> Position -> Direction -> LabMap
-moveGuard = undefined
+-- TODO inefficient due to extend?
+movePatrol :: LabMap -> Position -> Position -> Direction -> LabMap
+movePatrol m from to d =
+  seek to $
+    extend (\s -> if pos s == to then Patrol d else if pos s == from then OpenSpace else extract s) m
 
 data Move = MoveTo Position Direction | GameOver
 
-nextMove :: LabMap -> Move
-nextMove game =
-  let
-    position :: Position
-    position = pos game
-    direction = fromMaybe South (currentDirection game) -- TODO
-    newPos :: Direction -> (Position, Direction, Cell)
-    newPos d =
-      let
-        candidate = moveForward d position
-       in
-        (candidate, d, peek candidate game)
-    candidates :: [(Position, Direction, Cell)]
-    candidates = fmap newPos (directionsClockwise direction)
-    res :: Move
-    res = case headMay candidates of
-      Just (_, _, OutOfbounds) -> GameOver
-      _ -> fromMaybe GameOver (headMay (mapMaybe available candidates))
-    available (p, d, OpenSpace) = Just (MoveTo p d)
-    available (p, d, Guard _) = Just (MoveTo p d) -- should we allow this
-    available _ = Nothing
-   in
-    res
-
-oneStep :: LabMap -> Maybe LabMap
-oneStep game = game'
+destinations :: LabMap -> Position -> Direction -> NonEmpty (Position, Direction, Cell)
+destinations m p d = fmap generate (directionsClockwise d)
  where
-  current = pos game
-  move = nextMove game
-  game' :: Maybe LabMap
-  game' = case move of
-    (MoveTo p d) -> Just $ update game d current p
+  generate d' =
+    let
+      candidate = moveForward d' p
+     in
+      (candidate, d', peek candidate m)
+
+nextMove :: LabMap -> Position -> Direction -> Move
+nextMove m p d =
+  case N.head candidates of
+    (_, _, OutOfbounds) -> GameOver
+    _ -> fromMaybe GameOver (headMay (mapMaybe available (N.toList candidates)))
+ where
+  candidates = destinations m p d
+  available (p', d', OpenSpace) = Just (MoveTo p' d')
+  available (p', d', Patrol _) = Just (MoveTo p' d') -- should we allow this
+  available _ = Nothing
+
+oneStep :: LabMap -> Position -> Direction -> Maybe LabMap
+oneStep m position direction =
+  case nextMove m position direction of
+    (MoveTo destination finalDirection) -> Just $ movePatrol m position destination finalDirection
     GameOver -> Nothing
 
-currentDirection :: LabMap -> Maybe Direction
-currentDirection game = case peek (pos game) game of
-  Guard d -> Just d
-  _ -> Nothing
-
-update :: LabMap -> Direction -> Position -> Position -> LabMap
-update game direction old new =
-  seek new $
-    extend (\s -> if pos s == new then Guard direction else if pos s == old then OpenSpace else extract s) game
-
-walk :: LabMap -> [(Position, Maybe Direction)]
-walk = unfoldr step
+walk :: LabMap -> [(Position, Direction)]
+walk m = unfoldr step (Just m)
  where
-  step :: LabMap -> Maybe ((Position, Maybe Direction), LabMap)
-  step = fmap (\g -> ((pos g, currentDirection g), g)) . oneStep
+  step :: Maybe LabMap -> Maybe ((Position, Direction), Maybe LabMap)
+  step Nothing = Nothing -- No more steps to take
+  step (Just next) = do
+    (position, direction) <- patrol next
+    let nextMap = oneStep next position direction
+    Just ((position, direction), nextMap)
 
 program :: FilePath -> IO ()
 program = (=<<) print . fmap logic . T.readFile
@@ -174,7 +178,7 @@ program = (=<<) print . fmap logic . T.readFile
 data Answer = Answer Int deriving (Eq, Show)
 
 logic :: T.Text -> Either Error Answer
-logic = (=<<) answer . (first ParsingError . parse)
+logic = (=<<) answer . first ParsingError . parse
 
 answer :: [[Cell]] -> Either Error Answer
 answer = fmap Answer . part1
@@ -185,10 +189,10 @@ part1 = fmap (countUnique . fmap fst) . loadAndWalk
 countUnique :: (Eq a) => [a] -> Int
 countUnique = length . nub
 
-loadAndWalk :: [[Cell]] -> Either Error [(Position, Maybe Direction)]
-loadAndWalk cells = do
-  (g, p, d) <- maybeToRight WalkerMissing (initialLabMap cells)
-  return $ (p, Just d) : walk g
+loadAndWalk :: [[Cell]] -> Either Error [(Position, Direction)]
+loadAndWalk cells =
+  walk
+    <$> maybeToRight WalkerMissing (initialLabMap cells)
 
 -- parsing
 
@@ -197,9 +201,9 @@ type ParserError = ParseErrorBundle T.Text Void
 
 cellParser :: Parser Cell
 cellParser =
-  (char '.' $> OpenSpace)
-    <|> (char '#' $> Obstruction)
-    <|> (char '^' $> Guard North)
+  char '.' $> OpenSpace
+    <|> char '#' $> Obstruction
+    <|> char '^' $> Patrol North
 
 cellsParser :: Parser [[Cell]]
 cellsParser = sepBy (many cellParser) newline

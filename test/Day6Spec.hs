@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE OverloadedLists #-}
 
 module Day6Spec where
 
@@ -50,7 +51,7 @@ simple :: [[Cell]]
 simple =
   [ [OpenSpace, OpenSpace, OpenSpace, Obstruction, OpenSpace, OpenSpace]
   , [OpenSpace, OpenSpace, OpenSpace, OpenSpace, OpenSpace, Obstruction]
-  , [Obstruction, OpenSpace, OpenSpace, Guard North, OpenSpace, Obstruction]
+  , [Obstruction, OpenSpace, OpenSpace, Patrol North, OpenSpace, Obstruction]
   , [OpenSpace, Obstruction, OpenSpace, OpenSpace, OpenSpace, OpenSpace]
   , [OpenSpace, OpenSpace, OpenSpace, OpenSpace, Obstruction, OpenSpace]
   ]
@@ -76,7 +77,7 @@ simpleArray =
     , ((2, 4), OpenSpace)
     , ((3, 0), Obstruction)
     , ((3, 1), OpenSpace)
-    , ((3, 2), Guard North)
+    , ((3, 2), Patrol North)
     , ((3, 3), OpenSpace)
     , ((3, 4), OpenSpace)
     , ((4, 0), OpenSpace)
@@ -91,7 +92,7 @@ simpleArray =
     , ((5, 4), OpenSpace)
     ]
 
-parseLoadAndWalk :: T.Text -> Either Error [(Position, Maybe Direction)]
+parseLoadAndWalk :: T.Text -> Either Error [(Position, Direction)]
 parseLoadAndWalk text = (=<<) loadAndWalk (first ParsingError (parse text))
 
 spec :: Spec
@@ -105,59 +106,59 @@ spec = describe "Day 6" $ do
   it "buildArray" $ do
     listToArray simple `shouldBe` simpleArray -- array ((0, 0), (0, 0)) [((0, 0), OpenSpace)]
   it "walk simple example" $
-    loadAndWalk simple `shouldBe` Right [((3, 2), Just North), ((3, 1), Just North), ((4, 1), Just East), ((4, 2), Just South), ((4, 3), Just South), ((3, 3), Just West), ((2, 3), Just West), ((2, 2), Just North), ((2, 1), Just North), ((2, 0), Just North)]
+    loadAndWalk simple `shouldBe` Right [((3, 2), North), ((3, 1), North), ((4, 1), East), ((4, 2), South), ((4, 3), South), ((3, 3), West), ((2, 3), West), ((2, 2), North), ((2, 1), North), ((2, 0), North)]
 
   it "walk never hitting the edges" $
-    parseLoadAndWalk stuck `shouldBe` Right [((3, 1), Just North)]
+    parseLoadAndWalk stuck `shouldBe` Right [((3, 1), North)]
 
   it "walk" $
     parseLoadAndWalk input
       `shouldBe` Right
-        [ ((4, 6), Just North)
-        , ((4, 5), Just North)
-        , ((4, 4), Just North)
-        , ((4, 3), Just North)
-        , ((4, 2), Just North)
-        , ((4, 1), Just North)
-        , ((5, 1), Just East)
-        , ((6, 1), Just East)
-        , ((7, 1), Just East)
-        , ((8, 1), Just East)
-        , ((8, 2), Just South)
-        , ((8, 3), Just South)
-        , ((8, 4), Just South)
-        , ((8, 5), Just South)
-        , ((8, 6), Just South)
-        , ((7, 6), Just West)
-        , ((6, 6), Just West)
-        , ((5, 6), Just West)
-        , ((4, 6), Just West)
-        , ((3, 6), Just West)
-        , ((2, 6), Just West)
-        , ((2, 5), Just North)
-        , ((2, 4), Just North)
-        , ((3, 4), Just East)
-        , ((4, 4), Just East)
-        , ((5, 4), Just East)
-        , ((6, 4), Just East)
-        , ((6, 5), Just South)
-        , ((6, 6), Just South)
-        , ((6, 7), Just South)
-        , ((6, 8), Just South)
-        , ((5, 8), Just West)
-        , ((4, 8), Just West)
-        , ((3, 8), Just West)
-        , ((2, 8), Just West)
-        , ((1, 8), Just West)
-        , ((1, 7), Just North)
-        , ((2, 7), Just East)
-        , ((3, 7), Just East)
-        , ((4, 7), Just East)
-        , ((5, 7), Just East)
-        , ((6, 7), Just East)
-        , ((7, 7), Just East)
-        , ((7, 8), Just South)
-        , ((7, 9), Just South)
+        [ ((4, 6), North)
+        , ((4, 5), North)
+        , ((4, 4), North)
+        , ((4, 3), North)
+        , ((4, 2), North)
+        , ((4, 1), North)
+        , ((5, 1), East)
+        , ((6, 1), East)
+        , ((7, 1), East)
+        , ((8, 1), East)
+        , ((8, 2), South)
+        , ((8, 3), South)
+        , ((8, 4), South)
+        , ((8, 5), South)
+        , ((8, 6), South)
+        , ((7, 6), West)
+        , ((6, 6), West)
+        , ((5, 6), West)
+        , ((4, 6), West)
+        , ((3, 6), West)
+        , ((2, 6), West)
+        , ((2, 5), North)
+        , ((2, 4), North)
+        , ((3, 4), East)
+        , ((4, 4), East)
+        , ((5, 4), East)
+        , ((6, 4), East)
+        , ((6, 5), South)
+        , ((6, 6), South)
+        , ((6, 7), South)
+        , ((6, 8), South)
+        , ((5, 8), West)
+        , ((4, 8), West)
+        , ((3, 8), West)
+        , ((2, 8), West)
+        , ((1, 8), West)
+        , ((1, 7), North)
+        , ((2, 7), East)
+        , ((3, 7), East)
+        , ((4, 7), East)
+        , ((5, 7), East)
+        , ((6, 7), East)
+        , ((7, 7), East)
+        , ((7, 8), South)
+        , ((7, 9), South)
         ]
 
   it "logic" $
