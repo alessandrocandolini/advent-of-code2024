@@ -6,15 +6,14 @@ import Control.Applicative (many)
 import Data.List (group, inits, tails)
 import qualified Data.List.NonEmpty as N
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Data.Void (Void)
 import Text.Megaparsec (Parsec, optional, runParser)
 import Text.Megaparsec.Char (eol, space)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
 
-program :: FilePath -> IO ()
-program = (=<<) print . fmap logic . T.readFile
+program :: T.Text -> IO ()
+program = print . logic
 
 data Answer = Answer Int Int deriving (Eq, Show)
 
@@ -57,7 +56,7 @@ distance = (abs .) . (-)
 pairwiseDistances :: (Num a) => [a] -> [a]
 pairwiseDistances as = uncurry distance <$> zip as (tail as)
 
-pairwiseDistanceAlwaysLessThan :: (Ord a, Num a) =>a -> [a] -> Bool
+pairwiseDistanceAlwaysLessThan :: (Ord a, Num a) => a -> [a] -> Bool
 pairwiseDistanceAlwaysLessThan threshold = maybe True ((<= threshold) . maximum) . N.nonEmpty . pairwiseDistances
 
 isSafe1 :: (Ord a, Num a) => [a] -> Bool

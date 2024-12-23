@@ -19,7 +19,6 @@ import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as N
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Data.Void (Void)
 import Safe (headMay)
 import Text.Megaparsec (Parsec, runParser, sepBy)
@@ -173,8 +172,8 @@ walk m = unfoldr step (Just m)
     let nextMap = oneStep next position direction
     Just ((position, direction), nextMap)
 
-program :: FilePath -> IO ()
-program = (=<<) print . fmap logic . T.readFile
+program :: T.Text -> IO ()
+program = print . logic
 
 data Answer = Answer Int deriving (Eq, Show)
 

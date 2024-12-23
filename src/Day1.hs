@@ -6,7 +6,6 @@ import Data.Hashable (Hashable)
 import Data.List (foldl', sort)
 import Data.Semigroup (Sum (..))
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Data.Tuple (swap)
 import Data.Void (Void)
 import Text.Megaparsec (Parsec, runParser, sepBy)
@@ -14,8 +13,8 @@ import Text.Megaparsec.Char (newline, space)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
 
-program :: FilePath -> IO ()
-program = (=<<) print . fmap logic . T.readFile
+program :: T.Text -> IO ()
+program = print . logic
 
 data Answer = Answer Int Int deriving (Eq, Show)
 

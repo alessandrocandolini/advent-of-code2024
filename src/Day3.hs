@@ -5,7 +5,6 @@ import Data.Machine (Mealy)
 import qualified Data.Machine as M
 import Data.Semigroup (Sum (..))
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Data.Void (Void)
 import Text.Megaparsec (MonadParsec (try), Parsec, anySingle, runParser, skipManyTill)
 import Text.Megaparsec.Char (char, string)
@@ -13,8 +12,8 @@ import Text.Megaparsec.Char.Lexer (decimal)
 import Text.Megaparsec.Error (ParseErrorBundle)
 import Witherable (catMaybes, mapMaybe)
 
-program :: FilePath -> IO ()
-program = (=<<) print . fmap logic . T.readFile
+program :: T.Text -> IO ()
+program = print . logic
 
 data Answer = Answer Int Int deriving (Eq, Show)
 

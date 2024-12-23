@@ -2,11 +2,10 @@ module Day4 where
 
 import Data.List (tails, transpose)
 import qualified Data.Text as T
-import qualified Data.Text.IO as T
 import Witherable (mapMaybe)
 
-program :: FilePath -> IO ()
-program = (=<<) print . fmap logic . T.readFile
+program :: T.Text -> IO ()
+program = print . logic
 
 data Answer = Answer Int Int deriving (Eq, Show)
 
