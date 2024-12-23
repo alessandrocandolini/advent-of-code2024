@@ -59,3 +59,33 @@ To run a version of **ghci** compatible with the resolver
 stack ghci
 ```
 For more information, refer to the `stack` official docs.
+
+
+## Available commands
+
+Thanks to [optparse-applicative](https://hackage.haskell.org/package/optparse-applicative), the CLI automatically generates documentation from code. It's recommended to use the generated helper to explore all the options. However, a summary is provided here of the most relevant options. 
+
+
+### Run solutions
+
+From file:
+```
+aoc2024 run -d 1 -f inputs/day1
+```
+
+From standard input: 
+```
+aoc2024 run -d 1  --with-input < inputs/day1 
+```
+or 
+```
+cat input/day1 | aoc2024 run -d 1 --with-input 
+```
+
+### Retrieve stats
+```
+export AOC_SESSION=<insert the cookie value> 
+aoc2024 stats 
+aoc2024 stats -y 2024
+aoc2024 stats -y 2024 --json
+```

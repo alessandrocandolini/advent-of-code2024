@@ -1,5 +1,7 @@
 module Args where
 
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import Options.Applicative
 
 data Command
@@ -10,9 +12,32 @@ data Command
 
 data Args = Args
   { day :: Int
-  , input :: FilePath
+  , input :: DayInput
   }
   deriving (Eq, Show)
+
+data DayInput = FromFile FilePath | FromStdInput deriving (Eq, Show)
+
+readInput :: DayInput -> IO T.Text
+readInput (FromFile f) = T.readFile f
+readInput FromStdInput = T.getContents
+
+dayInputParser :: Parser DayInput
+dayInputParser = fromFileParser <|> fromStdInputParser
+ where
+  fromFileParser =
+    FromFile
+      <$> strOption
+        ( long "filename"
+            <> short 'f'
+            <> help "Read input from the specified file"
+        )
+  fromStdInputParser =
+    flag'
+      FromStdInput
+      ( long "with-input"
+          <> help "Read input from standard input"
+      )
 
 newtype GenerateArgs = GenerateArgs Int deriving (Eq, Show)
 data StatsRender = ConsoleRender | JsonRender deriving (Eq, Show)
@@ -27,11 +52,7 @@ argsParser =
           <> short 'd'
           <> help "day"
       )
-    <*> strOption
-      ( long "filename"
-          <> short 'f'
-          <> help "filename"
-      )
+    <*> dayInputParser
 
 generateArgsParser :: Parser GenerateArgs
 generateArgsParser =
