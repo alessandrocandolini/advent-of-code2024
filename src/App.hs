@@ -25,11 +25,11 @@ program' (Generate (GenerateArgs d)) = CodeGenerator.program d
 program' (GetStats (StatsArgs year export)) = Stats.program year export
 
 runSolution :: Int -> T.Text -> IO ()
-runSolution n input = case solution n of
-  Just s -> s input
+runSolution day input = case solution day of
+  Just solve -> solve input
   Nothing -> putStrLn "day not found"
 
 solution :: Int -> Maybe (T.Text -> IO ())
-solution n
-  | n >= 1 && n <= length solutions = Just (solutions !! (n - 1))
+solution day
+  | day >= 1 && day <= length solutions = Just (solutions !! (day - 1))
   | otherwise = Nothing
