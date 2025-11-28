@@ -76,14 +76,14 @@ jobs:
         stack build --system-ghc --test --no-run-tests
 
     - name: Generate coverage report
-      uses: 8c6794b6/hpc-codecov-action@v3
+      uses: 8c6794b6/hpc-codecov-action@v4
       with:
         target: stack:aoc2024-test
         out: ./codecov.json
         verbose: true
 
     - name: Send coverage report
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         files: ./codecov.json
         fail_ci_if_error: false # optional (default = false)
