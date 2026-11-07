@@ -37,6 +37,7 @@ default-extensions:
 
 ghc-options:
   - -Wall
+  - -fmax-uncovered-patterns=99
   - -Wincomplete-record-updates
   - -Wincomplete-uni-patterns
   - -Wredundant-constraints
