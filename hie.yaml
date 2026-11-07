@@ -1,0 +1,17 @@
+cradle:
+  stack:
+    componentsToLoad:
+      - "advent-of-code2024:lib"
+      - "advent-of-code2024:test:aoc2024-test"
+    components:
+      - path: "./src"
+        component: "advent-of-code2024:lib"
+
+      - path: "./app/Main.hs"
+        component: "advent-of-code2024:exe:aoc2024"
+
+      - path: "./test"
+        component: "advent-of-code2024:test:aoc2024-test"
+
+      - path: "./benchmarks"
+        component: "advent-of-code2024:bench:aoc2024-benchmarks"
