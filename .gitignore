@@ -28,3 +28,4 @@ cabal.project.local~
 .ghc.environment.*
 inputs
 report.html
+tags
